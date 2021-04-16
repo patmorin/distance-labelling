@@ -52,7 +52,7 @@
 
 
 
-\title{\MakeUppercase{Distance Labelling of Unweighted Planar Graphs}\thanks{This research was partly funded by NSERC.}}
+\title{\MakeUppercase{Notes on Distance Labelling of Unweighted Planar Graphs}\thanks{This research was partly funded by NSERC.}}
 \author{Pat Morin%
     \thanks{School of Computer Science, Carleton University}}
 
@@ -76,7 +76,8 @@
 \maketitle
 
 \begin{abstract}
-    We give a \emph{distance labelling scheme} for unweighted undirected planar graphs in which each vertex is assigned a label of length $O(n^{1/3}\polylog n)$ such that the labels of any two vertices are sufficient to compute the distance between them.
+    These are some notes on ideas for a distance labelling scheme for planar graphs.
+    % We give a \emph{distance labelling scheme} for unweighted undirected planar graphs in which each vertex is assigned a label of length $O(n^{1/3}\polylog n)$ such that the labels of any two vertices are sufficient to compute the distance between them.
 \end{abstract}
 
 \section{Introduction}
@@ -89,7 +90,7 @@ A class of $\mathcal{G}$ of graphs has an $f(n)$-bit \emph{distance labelling sc
 
 \section{The Main Tool}
 \label{main_tool}
-
+really
 Let $G$ be a graph.\footnote{All graphs are connected, finite, undirected, simple, and unweighted, unless specified otherwise}  For any $x,y\in V(G)$, let $\dist_G(x,y)$ denote the minimum length of a path in $G$ with endpoints $x$ and $y$.  Any path $x_1,\ldots,x_m$ of length $\dist_G(x_1,x_m)$ is called an $(x_1,x_m)$ \emph{$G$-geodesic}.
 
 Let $T$ be a rooted tree.  A node $x\in V(T)$ is a \emph{$T$-ancestor} of $y\in V(T)$ if $x=y$ or $x$ is a $T$-ancestor of the parent of $y$.  If $x$ is a $T$-ancestor of $y$, then $y$ is a \emph{$T$-descendant} of $x$.  Note that every node of $T$ is both a $T$-ancestor and $T$-descendant of itself.  We use $\preceq_T$ to denote the $T$-ancestor relationship.  If $x\prec_T y$ and $x\neq y$ then we say that $x$ is \emph{strict} $T$-ancestor of $y$, $y$ is a \emph{strict} $T$-descendant of $x$ and $\prec_T$ denotes the partial order over $V(T)$ defined by the strict $T$-ancestor relation.  Define the relation $\comparable_T$ such that $x\comparable_T y$ if and only if $x\preceq_T y$ or $y\preceq_T x$.
@@ -297,17 +298,24 @@ Let $T_w:=\bigcup_{i=1}^s P_{wv_i}$ be the shortest path tree from $w$ to $V(P)$
 %     If $T'_w$ has $k$ leaves then $|T'_w)|\in \Omega(k^2)$.
 % \end{lem}
 
-\begin{lem}
+\begin{lem}\label{cyclically_unimodal}
     For any $w_1,w_2\in V(G_0)$ with $d:=\dist_{G_0}(w_1,w_2)$, there exists a cyclically unimodal\todo{Define cyclically unimodal} $s$-vector $v\in\{-d,\ldots,d\}^s$ such that $M_{*,w_1}=M_{*,w_2}+v$.
 \end{lem}
 
 At this point, I'm well and truly stuck.  I was hoping to maybe do something with ideas from computational geometry related to ham-sandwiches, and/or centerpoints, but have not had much progress. For every $v_i\in V(P)$ and $w\in V(G_0)$ there is a collection of $G_0$ geodesics that contain $v_i$ and $w$.  (Start with the shortest path tree  $T_{v_i}$ and keep only the vertices that have $w$ as a descendant or an ancestor.)
 
-These things behave a bit like lines. For example, for every $v_i$ there is a "halving line" that contains $v_i$ (this is a root-to-leaf path in $T_{v_i}$ with at most half the tree to its left and half the tree to its right.)  The vertices in $G_0$ also behave a bit like they have some size.  (Think of $v_i$ as a light and the subtree of $T_{v_i}$ rooted at $w$ as the shadow of $w$; as $w$ moves further away from $v_i$ it's shadow gets smaller.)
+Update: The next plan:
+\begin{enumerate}
+    \item Prove a version of \cref{cyclically_unimodal} that looks like the following:  Let $C$ be a cycle in $G$ consisting of two vertical paths in a BFS tree of $G$.  This partitions $G$ into $G_0$ (inside) and $G_1$ (outside).  Let $B$ be a ball in $G_0$ centered at $v\in V(G_0)$ such that $G_0[B]$ has treewidth at most $t$.  Let $\vec{v}$ be the distances vector from $v$ to $V(G_1)$ with the vertices listed in clockwise order.  Let $\vec{u}$ be the distance vector from $u$ to $V(G_1)$ with vertices listed in the same order.  Then $\vec{v}-\vec{u}$ has representation complexity $\tilde{O}(t)$.
 
-Let $L(v_i,w)$ be the set of nodes in the subtree of $T_{v_i}$ that are related to $w$.  It seems like it would be useful to find $w$, $i$, and $\ell$ $G_0$ such that $\bigcap_{j=i}^{i+\ell} v_j L(v_j,w)$ has size $k$ for some large value of $k$.  This would allows us to encode all $k\ell$ distances $\dist_{G_0}(v_j,w')$ by having each of the nodes involved store their distances to $w$.
+    \item Such a lemma would be helpful because a ball of treewidth $t$ is guaranteed to contains a subdivision of a $t\times t$ grid, so it has $\Omega(t^2)$ vertices.  The idea then is to take $t=n^{1/3}$, cover $G_0$ with $O(n/t^2)=O(n^{1/3})$ of these balls and have each vertex in $G_1$ store its distance to each ball center $v$ and have each vertex $u\in B$ store the difference vector $\vec{v}-\vec{u}$.  Of course, we have to make sure that no vertex is contained in too many of these balls, but that shouldn't be a big problem.
+\end{enumerate}
 
-\section{An $\tilde{O}(\sqrt{n})$ bound using crossing numbers}
+% These things behave a bit like lines. For example, for every $v_i$ there is a "halving line" that contains $v_i$ (this is a root-to-leaf path in $T_{v_i}$ with at most half the tree to its left and half the tree to its right.)  The vertices in $G_0$ also behave a bit like they have some size.  (Think of $v_i$ as a light and the subtree of $T_{v_i}$ rooted at $w$ as the shadow of $w$; as $w$ moves further away from $v_i$ it's shadow gets smaller.)
+%
+% Let $L(v_i,w)$ be the set of nodes in the subtree of $T_{v_i}$ that are related to $w$.  It seems like it would be useful to find $w$, $i$, and $\ell$ $G_0$ such that $\bigcap_{j=i}^{i+\ell} v_j L(v_j,w)$ has size $k$ for some large value of $k$.  This would allows us to encode all $k\ell$ distances $\dist_{G_0}(v_j,w')$ by having each of the nodes involved store their distances to $w$.
+
+\section{An $\tilde{O}(\sqrt{n})$ bound using crossing numbers?}
 
 Here's an alternative strategy.  Let $M$ be a set of unordered pairs of vertices of $G$ and let $G_M$ be the graph with vertex set $V(G)$ and edge set $E(G_M)=M$.  We obtain drawing of $G_M$ by drawing each edge $vw$ using (a slight perturbation of) the shortest path from $v$ to $w$ in $G$.  By the crossing lemma, this drawing has $\Omega(|M|^3/n^2)$ pairs of crossings edges.  Each pair of crossing edges corresponds to a pair of shortest paths in $G$ with a common vertex and we can charge that pair to their common vertex.  When we do this, some vertex $v\in V(G)$ is charged $\Omega((|M|/n)^3)$ times.  This means $v$ is involved in this many crossing pairs and therefore there are at least $\Omega((|M|/n)^{3/2})$ pairs $(x,y)\in M$ such that the shortest path from $x$ to $y$ in $G$ contains $v$.  This means that there are $\Omega((|M|/n)^{3/2})$ entries in the distance matrix that can be stored by having each vertex remember its distance to $v$.
 
@@ -317,19 +325,36 @@ with $m_0=\binom{n}{2}$.  This starts out well and continues to do so until $k=\
 
 We may even be able to do this without using the crossing lemma.  If we could get down to a case where the average distance between a of vertices $v,w$ of $G$ is $\Omega(\sqrt{n})$ then the total length of all paths is $\Omega(n^{5/2})$, so some vertex is involved in $\Omega(n^{3/2})$ paths.
 
-Hold on now.  We already know what to do if we have a BFS layering in which every $n^{1/3}$ consecutive layers contains a layer of size at most $n^{1/3}$. We also know what to if we have a separator of size $n^{1/3}$.  Thus, we can assume that for each $v$ in $G$, the BFS layering of $v$ contains a set of $\Omega(n^{1/3})$ consecutive layers each of size at least $n^{1/3}$ and whose total size is at least $(1-\epsilon)n$.  If I could show that the distribution over these layers is fairly uniform, then I would get an average distance of $\Omega(n^{1/3})$.
+% Hold on now.  We already know what to do if we have a BFS layering in which every $n^{1/3}$ consecutive layers contains a layer of size at most $n^{1/3}$. We also know what to if we have a separator of size $n^{1/3}$.  Thus, we can assume that for each $v$ in $G$, the BFS layering of $v$ contains a set of $\Omega(n^{1/3})$ consecutive layers each of size at least $n^{1/3}$ and whose total size is at least $(1-\epsilon)n$.  If I could show that the distribution over these layers is fairly uniform, then I would get an average distance of $\Omega(n^{1/3})$.
 
-More usefully, in the product $G\subseteq H\boxtimes P$, $\diam(G)\ge\max\{\diam(P),\diam(H)\}$.  We already know $\diam(P)$ is large.  I think we can also figure out that $\diam(H)$ is large since, otherwise, we get a small separator.  So both $\diam(P)$ and $\diam(H)$ are large.
+Here's an idea: Since $G$ has no $n^{1/3}$ separator, its treewidth is at least $n^{1/3}$, so it contains a subdivision of a $n^{1/3}\times n^{1/3}$ grid.  Since $G$ doesn't have any $n^{1/3}$ separator, I suspect one can strengthen that to say $G$ must contains a subdivision of an $n^{1/3}\times n^{2/3}$ grid.  This grid has $\Omega(n)$ vertices and average distance $\Omega(n^{2/3})$.  This makes the total distance $\Omega(n^{8/3})$ so, on average, each vertex can be used to cover $\Omega(n^{5/3})$ shortest paths.
 
- is separated by at most $n^{1/3}$ layers of size greater than $n^{1/3}$, so we can assume we don't have one of those.  Therefore, for every $v\in V(G)$, the BFS layering of $G$ contains a
+% More usefully, in the product $G\subseteq H\boxtimes P$, $\diam(G)\ge\max\{\diam(P),\diam(H)\}$.  We already know $\diam(P)$ is large.  I think we can also figure out that $\diam(H)$ is large since, otherwise, we get a small separator.  So both $\diam(P)$ and $\diam(H)$ are large.
+%
+% is separated by at most $n^{1/3}$ layers of size greater than $n^{1/3}$, so we can assume we don't have one of those.  Therefore, for every $v\in V(G)$, the BFS layering of $G$ contains a
+
+To gain some breathing room, we can always take $C n^{1/3}$ consecutive BFS layers and apply the naïve algorithm to the surrounding $3Cn^{1/3}$ layers.  This covers all paths between vertices in the middle layers that don't wander outside the two outer layers. In particular, it covers all paths of length at most $Cn^{1/3}$.  In fact we can do this as a first step to ensure that we don't have to worry about short paths at all.  We can also do this to the separator $X$ discussed above to reduce to a problem where we have two sets $A$ and $B$ separated by $n^{1/3}$ layers surrounding $X$ and we only have to worry about paths from $A$ to $B$.  The advantage of doing this on $X$ is that, since $X$ consists of two geodesics, any geodesic between $A$ and $B$ crosses $X$ only once.  So really it looks like the whole thing boils down to finding a solution for the bipartite ``well-separated'' case.
+
+Can we use this kind of approach to beat $O(\sqrt{n})$-length labels?
+Not without something more: Everything in here is also true about weighted graphs, so none of this can fully solve the problem.
 
 
-Can we use this kind of approach to beat $O(\sqrt{n})$-length labels?  One very slack part of this argument comes from the fact that we only charge each pair of crossing paths for one of the vertices they have in common. I would guess that, on average, they have $\omega(1)$ vertices in common.  If an average pair had $\Omega(n^{1/3})$ vertices in common then we would get
-\[  m_1 = \binom{n}{2} - \Omega(n^{5/3}) \enspace . \]
-This is a great start, since it could lead to be done when $k=O(n^{1/3})$.
+
+
+% One very slack part of this argument comes from the fact that we only charge each pair of crossing paths for one of the vertices they have in common. I would guess that, on average, they have $\omega(1)$ vertices in common.  If an average pair had $\Omega(n^{1/3})$ vertices in common then we would get
+% \[  m_1 = \binom{n}{2} - \Omega(n^{5/3}) \enspace . \]
+% This is a great start, since it could lead to be done when $k=O(n^{1/3})$.
 
 
 
+
+Some further avenues to explore:
+\begin{enumerate}
+    \item None of this uses the product structure theorem since it doesn't need to.  However, there's a subtle property of the connected path partition version of the theorem that seems relevant:  Any $G$-geodesic traces a simple path in the graph $H$.  This property comes from the fact that the parts of the partition $\mathcal{P}$ that define $H:=G/\mathcal{P}$ are themselves geodesics.  This seems like a very useful property.
+
+    \item In the product structure $H\boxtimes P$, we know how to handle the case where $\diam(P)\in O(n^{1/3})$.  What about the case where $\diam(H)\in O(n^{1/3})$.  Does this imply that $G$ has small separators?  Answer, NO: If $H$ has any path of length $\omega(n^{1/3})$ then $H\boxtimes P$ contains a large grid so its treewidth is large.
+
+\end{enumerate}
 
 
 
