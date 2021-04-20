@@ -357,6 +357,13 @@ Some further avenues to explore:
 \end{enumerate}
 
 
+\section{The End?}
+
+There's a family of bad examples involving a slight variation of a $d$-subdivision of a $d\times d$ grid.  In these examples, the distance vector from $v$ is unchanging, but there are $2^{d^2}$ distance vectors for $w$.  So just storing distances to $v$ doesn't help.  It also seems that just storing distances to $w$ doesn't help.  Finally, it doesn't look like storing distances to both $v$ and $w$ helps much when computing distances from $v$ to $w$.  On the other hand, this family of graphs has $O(d)=O(\sqrt[3]{n})$-sized separators\ldots
+
+\begin{center}
+    \includegraphics[width=.8\textwidth]{figs/bad-example}
+\end{center}
 
 
 
