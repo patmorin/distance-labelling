@@ -366,7 +366,88 @@ There's a family of bad examples involving a slight variation of a $d$-subdivisi
 \end{center}
 
 
+\section{Connectivity Reductions}
 
+In this section we describe a few tricks that can be used to reduce to more highly connected cases. Some of the ideas used might turn out to be be useful.
+
+\subsection{Reduction to the Biconnected Case}
+
+To reduce to the biconnected case, consider the \emph{block cut tree} $T$ of $G$.  This is a tree that indexes a sequence of subgraphs $(G_x:x\in V(T))$.
+\begin{enumerate}
+    \item For each cut vertex $v$ of $G$, $T$ contains a \emph{cut node} $x$ with $G_x:=(\{v\},\emptyset)$.
+    \item For each biconnected component\footnote{A graph $G$ is \emph{biconnected} if $G-\{v\}$ is connected for any $v\in V(G)$.  A biconnected component of a graph $G$ is a maximal biconnected subgraph of $G$.} $C$ of $G$, $T$ contains a \emph{block node} $y$ with $G_y=C$.
+    \item Any edge $xy$ is included in $T$ if and only if $x$ is a cut node, $y$ is a component node and $V(G_x)\subseteq V(G_y)$.
+\end{enumerate}
+
+The block cut tree $T$ contains a node $x^*$ such that $T-\{x^*\}$ has no component of size greater than $|T|/2$.\todo{We can save a log factor by using a weighted cut here instead}  Let $C$ be the set of components of $T-\{x^*\}$.  For each component $X\in C$, define the subgraph $G_X:=\bigcup_{x\in V(X)} G_x$ and the vertex $v_X$ as the unique element in the singleton set $V(G_X)\cap V(G_{x^*})$.  For each $w\in V(G)\setminus V(G_{x^*})$, let $X_w$ be the unique $X\in C$ such that $w\in V(X)$.
+
+
+% For each vertex $v$ of $G_{x^*}$ define the subgraph
+% \[
+%     G_v = G\left[\{v\} \cup \cup\{V(X) : X\in C,\, v_X=v  \}
+%     \right]
+% \]
+
+% Fix some constant $a$, $0<a < 1$, let $I:=\{X\in C: |G_v|\ge a |G|\}$, and let $\overline{I}:=V(G_{x^*})\setminus I$.  We call the elements of $I$ \emph{heavy vertices} of $G_{x^*}$ and the elements of $\overline{I}$ are the \emph{light vertices} of $G_{x^*}$.
+
+We will show how to compute a distance labelling $\ell_G:V(G)\to\{0,1\}^*$ for the planar graph $G$ assuming we know how to compute a distance labelling for any biconnected planar graph.
+
+If $|G|\le 1$ then the problem is trivial, so no labels are needed and $\ell_G(w):=\varepsilon$ for each $w\in V(G)$.  Otherwise, each vertex $w$ of $G$ is labelled with a label $\ell_G(w)$ that has the following parts:
+\begin{compactenum}
+    \item $\alpha(w):=x^*$
+    \item $\beta(w)$, the unique vertex in $X_w\cap G_{x^*}$
+    \item $\gamma(w):=\ell_{G_{x^*}}(\beta(w))$
+    \item $\delta(w):=\dist_G(w,\beta(w))$
+    \item $\epsilon(w):=X_w$\footnote{More precisely, $\epsilon(w)$ is a non-negative integer that identifies $X_w$, or $-1$ if $w\in G_{x^*}$.}
+    \item $\zeta(w):=\ell_{G_{X_w}}(w)$ or $\zeta(w):=\varepsilon$ if $w\in V(G_{x^*})$
+\end{compactenum}
+
+Note that $\gamma(w)$ \emph{is not} recursively defined since $G_{x^*}$ is biconnected.  On the other hand $\zeta(w)$ \emph{is} recursively defined since $G_{\beta(w)}$ may not be biconnected.  Before analyzing the lengths of the labels in $\ell_G$, we first show how $\ell_G(v)$ and $\ell_G(w)$ can be used to compute $\dist_G(v,w)$.  We distinguish between the following cases:
+
+\begin{compactenum}
+    % \item If $\beta(v)=v$ and $\beta(w)=w$ then $v$ and $w$ are both vertices of $G_{x^*}$ and $\dist_G(v,w)=\dist_{G_{x^*}}(v,w)$ is computed using $\gamma(v)=\ell_{G_{x^*}}(v)$ and $\gamma(w)=\ell_{G_{x^*}}(w)$.
+
+    % \item If $v':=\beta(v)=\beta(w)$ and $\epsilon(v)\neq\epsilon(w)$ then $\dist_G(v,w)=\dist_{G}(v,v')+\dist_G(v',w)$ is computed using $\delta(v)=\dist_G(v,v')$ and $\delta(w)=\dist_G(v',w)$.
+
+    \item If $\beta(v)=\beta(w)$ and $X:=\epsilon(v)=\epsilon(w)$ then  $\dist_G(v,w)=\dist_{G_X}(v,w)$ is computed (inductively) using
+     $\zeta(v)=\ell_{G_{X}}(v)$ and $\zeta(w)=\ell_{G_{X}}(w)$.
+
+    % \item If $\beta(v)\in I$ then we can compute $\dist_G(v,w)=\dist_G(w,\beta(v))+\dist_G(\beta(v),v)$.  Since $\beta(v)\in I$, the first term can be obtained from $\epsilon(w)$.  The second term is $\delta(v)=\dist_G(\beta(v),v)$.
+
+    % \item If $\beta(w)\in I$ then we proceed as in the previous case, reversing the roles of $v$ and $w$.
+
+    \item Otherwise, $\dist_G(v,w)=\dist_{G}(v,\beta(v))+\dist_{G_{x^*}}(\beta(v),\beta(w))+ \dist_{G}(\beta(w),w)$. The first and last terms are computed using $\delta(v)=\dist_G(v,\beta(v))$ and $\delta(w)=\dist_G(\beta(w), w)$, respectively.  The middle term is computed from $\gamma(v)=\ell_{G_{x^*}}(\beta(v))$ and $\gamma(w)=\ell_{G_{x^*}}(\beta(w))$.
+\end{compactenum}
+
+Finally, we analyze the size of the resulting scheme.  Let $c$ be the exponent such that every $n$-vertex biconnected planar graph has a distance labelling scheme using labels of length $O(n^c)$.  Observe that $\ell_G(w)$ contains exactly one label $\gamma(w)$ from $\ell_{G_{x^*}}$ and this label has length $O(n^c)$.  The remaining parts $\ell_G(w)$ each have length $O(\log n)$ except for $\zeta(w)$, which is label from $\ell_{G_{X_w}}$.  The tree $X_w$ has size $|X_w|\le |T|/2$ and is the block cut tree for $G_{X_w}$.  Therefore, if $S(m)$ denotes the length of the longest label $\ell_G(w)$ obtained in an $n$-vertex planar graph $G$ whose block cut tree has $m$ nodes, then we obtain the recurrence
+\[
+  S(m) \le \begin{cases}
+               O(n^c) & \text{if $m=1$} \\
+               O(n^c) + S(m/2) &  \text{if $m>1$}
+           \end{cases}
+\]
+which resolves to $S(m)=O(n^c\log m)$.\todo{See note before about shaving a log} Note that there is a subtlety here involving the vertices of $G_{x^*}$ These vertices may appear in $G_X$ for many components $X\in C$.  However, each such vertex $w$ does not receive (a) label(s) $\zeta(w)$.
+
+\subsection{Reduction to the Triconnected Case}
+
+For a reduction from the biconnected case to the triconnected case, we will try to proceed exactly as in the previous section, but instead of a block cut tree we use an SPQR-tree $T$.  In the previous case, we didn't make a distinction between the case where $x^*$ was a cut nodes or a block node, but here we do need to make a distinction between the different kinds of nodes in an SPQR-tree.
+
+\begin{itemize}
+    \item S nodes:  If $x^*$ is an S node then $G_{x^*}$ is a cycle that consists of viritual edges and real edges.  Each virtual edge $vw$ has a weight corresponding to the length of the shortest path from $v$ to $w$ in all of the graphs attached to $vw$.  To distance label $G_{x^*}$ we fix some vertex $v_0$ of $G_{x^*}$ and give each vertex $w$ a label consisting of the length of the cycle and the distance from $v_0$ clockwise around the cycle.  This makes it easy to compute $\dist_G(v,w)$ for any two vertices $v,w\in V(G_{})$
+
+    \item P nodes: If $x^*$ is a P node then $G_{x^*}$ is a ``dipole graph'' with two vertices $v$ and $w$. In this case, we only care about the shortest path from $v$ to $w$.
+
+    \item Q nodes: These are not really used.
+
+    \item R nodes: If $x^*$ is an R node, then $G_{x^*}$ is a $3$-connected graph containing both real and virtual edges. Each virtual edge $vw$ is represented as weighted edge whose weight is equal to $\dist_G(v,w)$.  This result in a weighted 3-connected graph of total edge length $O(n)$.  By assumption, these can be labelled with labels of length $O(n^c)$.
+\end{itemize}
+
+
+
+
+\subsection{A General Solution}
+
+More generally, we can always try to cut out subproblems
 
 
 
